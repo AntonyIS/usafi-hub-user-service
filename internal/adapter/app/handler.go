@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func InitGinRoutes(userService ports.UserService, roleService ports.RoleService, userRoleService ports.UserRoleService, config config.Config) {
+func InitGinRoutes(userService ports.UserService, roleService ports.RoleService, userRoleService ports.UserRoleService, config config.Config, logger ports.LoggerService) {
 	gin.SetMode(gin.DebugMode)
 
 	router := gin.Default()
@@ -29,11 +29,23 @@ func InitGinRoutes(userService ports.UserService, roleService ports.RoleService,
 	)
 
 	homeRoutes := router.Group("/")
+	userRoutes := router.Group("/users/v1")
+	roleRoutes := router.Group("/roles/v1")
+	userRoleRoutes := router.Group("/user_roles/v1")
+	authRoutes := router.Group("/auth/v1")
+
+	middleware := NewMiddleware(userService, logger, config.SECRET_KEY)
+
+	homeRoutes.Use(middleware.AuthorizeToken)
+	userRoutes.Use(middleware.AuthorizeToken)
+	roleRoutes.Use(middleware.AuthorizeToken)
+	userRoleRoutes.Use(middleware.AuthorizeToken)
+
 	{
 		homeRoutes.GET("/", handler.Home)
 		homeRoutes.GET("/health-check", handler.Healthcheck)
 	}
-	userRoutes := router.Group("/users/v1")
+
 	{
 		userRoutes.POST("/", handler.CreateUser)
 		userRoutes.GET("/:user_id", handler.GetUserById)
@@ -42,7 +54,6 @@ func InitGinRoutes(userService ports.UserService, roleService ports.RoleService,
 		userRoutes.PUT(":user_id", handler.UpdateUser)
 		userRoutes.DELETE("/:user_id", handler.DeleteUser)
 	}
-	roleRoutes := router.Group("/roles/v1")
 	{
 		roleRoutes.POST("/", handler.CreateRole)
 		roleRoutes.GET("/:role_id", handler.GetRoleById)
@@ -51,13 +62,10 @@ func InitGinRoutes(userService ports.UserService, roleService ports.RoleService,
 		roleRoutes.DELETE("/:role_id", handler.DeleteRole)
 	}
 
-	userRoleRoutes := router.Group("/user_roles/v1")
 	{
 		userRoleRoutes.POST("/", handler.AddUserRole)
 		userRoleRoutes.GET("/:user_role_id", handler.RemoveUserRole)
 	}
-
-	authRoutes := router.Group("/auth/v1")
 
 	{
 		authRoutes.POST("/signup", handler.SignupUser)

@@ -12,7 +12,7 @@ type UserService interface {
 	GetUserByEmail(email string) (*domain.User, error)
 	UpdateUser(user domain.User) (*domain.User, error)
 	DeleteUser(userId string) error
-	LoginUser(email, password string) (*domain.User, error)
+	LoginUser(email, password string) (string, error)
 }
 
 type RoleService interface {

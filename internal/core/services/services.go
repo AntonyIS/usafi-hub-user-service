@@ -1,10 +1,12 @@
 package services
 
 import (
+	"errors"
 	"time"
 
 	"github.com/AntonyIS/usafi-hub-user-service/internal/core/domain"
 	"github.com/AntonyIS/usafi-hub-user-service/internal/core/ports"
+	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -14,7 +16,8 @@ type BaseService struct {
 }
 
 type UserService struct {
-	repo ports.UserRepository
+	repo   ports.UserRepository
+	jwtKey []byte
 }
 
 type RoleService struct {
@@ -32,9 +35,10 @@ func NewBaseService(repo ports.BaseRepository) *BaseService {
 	return &service
 }
 
-func NewUserService(repo ports.UserRepository) *UserService {
+func NewUserService(repo ports.UserRepository, jwtKey []byte) *UserService {
 	service := UserService{
-		repo: repo,
+		repo:   repo,
+		jwtKey: jwtKey,
 	}
 	return &service
 }
@@ -54,6 +58,11 @@ func NewUserRoleService(repo ports.UserRoleRepository) *UserRoleService {
 }
 
 func (svc UserService) CreateUser(user domain.User) (*domain.User, error) {
+	dbUser, _ := svc.GetUserByEmail(user.Email)
+
+	if dbUser != nil {
+		return nil, errors.New("user with email exists")
+	}
 	user.UserId = uuid.New().String()
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
@@ -70,17 +79,29 @@ func (svc UserService) GetUserById(userId string) (*domain.User, error) {
 	return svc.repo.GetUserById(userId)
 }
 
-func (svc UserService) LoginUser(email, password string) (*domain.User, error) {
+func (svc UserService) LoginUser(email, password string) (string, error) {
 	user, err := svc.GetUserByEmail(email)
-	if err != nil {
-		return nil, err
-	}
-	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
 
-	if err == nil {
-		return user, nil
+	if err != nil {
+		return "", err
 	}
-	return nil, err
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
+		return "", err
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"id":    user.UserId,
+		"email": user.Email,
+		"exp":   time.Now().Add(time.Hour * 72).Unix(),
+	})
+
+	tokenString, err := token.SignedString(svc.jwtKey)
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
 }
 
 func (svc UserService) GetUserByEmail(email string) (*domain.User, error) {

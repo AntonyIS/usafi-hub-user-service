@@ -395,7 +395,7 @@ func (h handler) LoginUser(ctx *gin.Context) {
 		return
 	}
 
-	DBuser, err := h.userService.LoginUser(user.Email, user.Password)
+	token, err := h.userService.LoginUser(user.Email, user.Password)
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
 			ctx.JSON(http.StatusUnauthorized, gin.H{
@@ -411,7 +411,9 @@ func (h handler) LoginUser(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, DBuser)
+	ctx.JSON(http.StatusOK, gin.H{
+		"token": token,
+	})
 }
 
 func (h handler) ForgotPassword(ctx *gin.Context) {
