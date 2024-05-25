@@ -26,6 +26,6 @@ WORKDIR /root/
 
 COPY --from=builder /app/src .
 
-EXPOSE 8082
+EXPOSE 5000
 
 CMD ["./src"]

@@ -34,7 +34,7 @@ func initServices() testingServices {
 	userRoleRepo, _ := repository.NewUserRolePostgresClient(*config, logger)
 
 	baseService := NewBaseService(baseRepo)
-	userService := NewUserService(userRepo, []byte(config.SECRET_KEY))
+	userService := NewUserService(userRepo, []byte(config.SECRET_KEY),logger)
 	roleService := NewRoleService(roleRepo)
 	userRoleService := NewUserRoleService(userRoleRepo)
 

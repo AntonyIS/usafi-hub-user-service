@@ -23,7 +23,7 @@ func RunService() {
 	userRepo, _ := repository.NewUserPostgresClient(*config, logger)
 	userRoleRepo, _ := repository.NewUserRolePostgresClient(*config, logger)
 
-	userService := services.NewUserService(userRepo, []byte(config.SECRET_KEY))
+	userService := services.NewUserService(userRepo, []byte(config.SECRET_KEY), logger)
 	roleService := services.NewRoleService(roleRepo)
 	userRoleService := services.NewUserRoleService(userRoleRepo)
 

@@ -15,6 +15,7 @@ type GinHandler interface {
 	GetUsers(ctx *gin.Context)
 	GetUsersWithRole(ctx *gin.Context)
 	GetUserById(ctx *gin.Context)
+	GetUserByEmail(ctx *gin.Context)
 	UpdateUser(ctx *gin.Context)
 	DeleteUser(ctx *gin.Context)
 	CreateRole(ctx *gin.Context)
@@ -27,6 +28,7 @@ type GinHandler interface {
 	SignupUser(ctx *gin.Context)
 	LoginUser(ctx *gin.Context)
 	ForgotPassword(ctx *gin.Context)
+	GenerateToken(ctx *gin.Context)
 }
 
 type handler struct {
@@ -132,6 +134,30 @@ func (h handler) GetUserById(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, user)
+}
+
+func (h handler) GetUserByEmail(ctx *gin.Context) {
+	var user struct {
+		Email string
+	}
+	if err := ctx.ShouldBindJSON(&user); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"responseMessage": err.Error(),
+			"responseCode":    400,
+		})
+		return
+	}
+
+	dbUser, err := h.userService.GetUserByEmail(user.Email)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"responseMessage": err.Error(),
+			"responseCode":    500,
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, dbUser)
 }
 
 func (h handler) UpdateUser(ctx *gin.Context) {
@@ -383,8 +409,8 @@ func (h handler) SignupUser(ctx *gin.Context) {
 
 func (h handler) LoginUser(ctx *gin.Context) {
 	type User struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
+		Email        string `json:"email"`
+		PasswordHash string `json:"password"`
 	}
 	var user User
 	if err := ctx.ShouldBindJSON(&user); err != nil {
@@ -395,7 +421,7 @@ func (h handler) LoginUser(ctx *gin.Context) {
 		return
 	}
 
-	token, err := h.userService.LoginUser(user.Email, user.Password)
+	token, err := h.userService.LoginUser(user.Email, user.PasswordHash)
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
 			ctx.JSON(http.StatusUnauthorized, gin.H{
@@ -439,5 +465,40 @@ func (h handler) ForgotPassword(ctx *gin.Context) {
 		"responseMessage": "User created successfully",
 		"responseCode":    201,
 		"data":            dbUser,
+	})
+}
+
+func (h handler) GenerateToken(ctx *gin.Context) {
+	type User struct {
+		Email        string `json:"email"`
+		PasswordHash string `json:"password_hash"`
+	}
+	var user User
+	if err := ctx.ShouldBindJSON(&user); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"responseMessage": err.Error(),
+			"responseCode":    400,
+		})
+		return
+	}
+
+	token, err := h.userService.LoginUser(user.Email, user.PasswordHash)
+	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			ctx.JSON(http.StatusUnauthorized, gin.H{
+				"responseMessage": "Invalid email or password",
+				"responseCode":    401,
+			})
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"responseMessage": err.Error(),
+			"responseCode":    500,
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"token": token,
 	})
 }

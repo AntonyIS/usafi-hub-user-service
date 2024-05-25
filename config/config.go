@@ -38,7 +38,7 @@ func NewConfig(logger ports.LoggerService) (*Config, error) {
 
 	var (
 		SECRET_KEY        = os.Getenv("SECRET_KEY")
-		SERVER_PORT       = "8082"
+		SERVER_PORT       = "5000"
 		POSTGRES_DB       = "usafihub"
 		POSTGRES_HOST     = "postgres"
 		POSTGRES_PORT     = "5432"

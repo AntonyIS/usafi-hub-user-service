@@ -48,6 +48,7 @@ func InitGinRoutes(userService ports.UserService, roleService ports.RoleService,
 
 	{
 		userRoutes.POST("/", handler.CreateUser)
+		userRoutes.POST("/get", handler.GetUserByEmail)
 		userRoutes.GET("/:user_id", handler.GetUserById)
 		userRoutes.GET("/", handler.GetUsers)
 		userRoutes.GET("/roles/:role_name", handler.GetUsersWithRole)
