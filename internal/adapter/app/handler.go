@@ -74,5 +74,6 @@ func InitGinRoutes(userService ports.UserService, roleService ports.RoleService,
 		authRoutes.POST("/forgot-password", handler.ForgotPassword)
 	}
 	log.Printf("Server running on port 0.0.0.0:%s", config.SERVER_PORT)
+	logger.Info(fmt.Sprintf("Server running on port 0.0.0.0:%s", config.SERVER_PORT))
 	router.Run(fmt.Sprintf(":%s", config.SERVER_PORT))
 }

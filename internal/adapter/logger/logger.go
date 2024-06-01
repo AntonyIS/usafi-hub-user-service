@@ -11,11 +11,16 @@ type DefaultLogger struct {
 }
 
 func NewDefaultLogger() (*DefaultLogger, error) {
-	path := "logs/logs.log"
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		os.MkdirAll("/logs", 0700)
+	// Ensure the directory exists
+	dir := "logs"
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		if err := os.MkdirAll(dir, 0700); err != nil {
+			return nil, err
+		}
 	}
 
+	// Specify the log file path
+	path := "logs/logs.log"
 	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return nil, err
@@ -26,7 +31,6 @@ func NewDefaultLogger() (*DefaultLogger, error) {
 		fileLogger:    log.New(file, "", log.LstdFlags),
 	}, nil
 }
-
 func (l *DefaultLogger) Info(message string) {
 	// l.consoleLogger.Println("[INFO]", message)
 	l.fileLogger.Println("[INFO]", message)

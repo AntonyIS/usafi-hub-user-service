@@ -48,15 +48,15 @@ func NewGinHandler(userService ports.UserService, roleService ports.RoleService,
 
 func (h handler) Home(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
-		"responseMessage": "Usafi Hub",
-		"responseCode":    200,
+		"responseMessage": "UsafiHub User Service",
+		"responseCode":    http.StatusOK,
 	})
 }
 
 func (h handler) Healthcheck(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
-		"responseMessage": "Usafi Hub",
-		"responseCode":    200,
+		"responseMessage": "UsafiHub User Service Health Check",
+		"responseCode":    http.StatusOK,
 	})
 }
 
@@ -65,7 +65,7 @@ func (h handler) CreateUser(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    400,
+			"responseCode":    http.StatusBadRequest,
 		})
 		return
 	}
@@ -74,14 +74,14 @@ func (h handler) CreateUser(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    500,
+			"responseCode":    http.StatusInternalServerError,
 		})
 		return
 	}
 
 	ctx.JSON(http.StatusCreated, gin.H{
 		"responseMessage": "User created successfully",
-		"responseCode":    201,
+		"responseCode":    http.StatusCreated,
 		"data":            dbUser,
 	})
 }
@@ -91,7 +91,7 @@ func (h handler) GetUsers(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    500,
+			"responseCode":    http.StatusInternalServerError,
 		})
 		return
 	}
@@ -99,7 +99,7 @@ func (h handler) GetUsers(ctx *gin.Context) {
 	if len(users) == 0 {
 		ctx.JSON(http.StatusOK, gin.H{
 			"responseMessage": "No users found",
-			"responseCode":    200,
+			"responseCode":    http.StatusOK,
 			"response":        users,
 		})
 	} else {
@@ -114,7 +114,7 @@ func (h handler) GetUsersWithRole(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    500,
+			"responseCode":    http.StatusInternalServerError,
 		})
 		return
 	}
@@ -128,7 +128,7 @@ func (h handler) GetUserById(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    500,
+			"responseCode":    http.StatusInternalServerError,
 		})
 		return
 	}
@@ -143,7 +143,7 @@ func (h handler) GetUserByEmail(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    400,
+			"responseCode":    http.StatusBadRequest,
 		})
 		return
 	}
@@ -152,7 +152,7 @@ func (h handler) GetUserByEmail(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    500,
+			"responseCode":    http.StatusInternalServerError,
 		})
 		return
 	}
@@ -165,7 +165,7 @@ func (h handler) UpdateUser(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    400,
+			"responseCode":    http.StatusBadRequest,
 		})
 		return
 	}
@@ -174,14 +174,14 @@ func (h handler) UpdateUser(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    500,
+			"responseCode":    http.StatusInternalServerError,
 		})
 		return
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"responseMessage": "User updated successfully",
-		"responseCode":    200,
+		"responseCode":    http.StatusOK,
 		"data":            dbUser,
 	})
 }
@@ -192,14 +192,14 @@ func (h handler) DeleteUser(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    500,
+			"responseCode":    http.StatusInternalServerError,
 		})
 		return
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"responseMessage": "User deleted successfully",
-		"responseCode":    200,
+		"responseCode":    http.StatusOK,
 	})
 }
 
@@ -208,7 +208,7 @@ func (h handler) CreateRole(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&role); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    400,
+			"responseCode":    http.StatusBadRequest,
 		})
 		return
 	}
@@ -218,14 +218,14 @@ func (h handler) CreateRole(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    500,
+			"responseCode":    http.StatusInternalServerError,
 		})
 		return
 	}
 
 	ctx.JSON(http.StatusCreated, gin.H{
 		"responseMessage": "Role created successfully",
-		"responseCode":    201,
+		"responseCode":    http.StatusCreated,
 		"data":            newRole,
 	})
 }
@@ -236,7 +236,7 @@ func (h handler) GetRoleById(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    500,
+			"responseCode":    http.StatusInternalServerError,
 		})
 		return
 	}
@@ -244,7 +244,7 @@ func (h handler) GetRoleById(ctx *gin.Context) {
 	if role == nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"responseMessage": "Role not found",
-			"responseCode":    "404",
+			"responseCode":    http.StatusNotFound,
 		})
 		return
 	}
@@ -257,14 +257,14 @@ func (h handler) GetRoles(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    500,
+			"responseCode":    http.StatusInternalServerError,
 		})
 		return
 	}
 	if len(roles) == 0 {
 		ctx.JSON(http.StatusOK, gin.H{
 			"responseMessage": "No roles found",
-			"responseCode":    200,
+			"responseCode":    http.StatusOK,
 			"response":        roles,
 		})
 
@@ -279,7 +279,7 @@ func (h handler) UpdateRole(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&role); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    400,
+			"responseCode":    http.StatusBadRequest,
 		})
 		return
 	}
@@ -288,14 +288,14 @@ func (h handler) UpdateRole(ctx *gin.Context) {
 	if err := h.roleService.UpdateRole(role); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    500,
+			"responseCode":    http.StatusInternalServerError,
 		})
 		return
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"responseMessage": "Role updated successfully",
-		"responseCode":    200,
+		"responseCode":    http.StatusOK,
 	})
 }
 
@@ -305,7 +305,7 @@ func (h handler) DeleteRole(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    "404",
+			"responseCode":    http.StatusNotFound,
 		})
 		return
 	}
@@ -313,21 +313,21 @@ func (h handler) DeleteRole(ctx *gin.Context) {
 	if role == nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    "404",
+			"responseCode":    http.StatusNotFound,
 		})
 		return
 	}
 	if err := h.roleService.DeleteRole(roleID); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    500,
+			"responseCode":    http.StatusInternalServerError,
 		})
 		return
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"responseMessage": "Role deleted successfully",
-		"responseCode":    200,
+		"responseCode":    http.StatusOK,
 	})
 }
 
@@ -336,7 +336,7 @@ func (h handler) AddUserRole(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&userRole); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    400,
+			"responseCode":    http.StatusBadRequest,
 		})
 		return
 	}
@@ -345,14 +345,14 @@ func (h handler) AddUserRole(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    500,
+			"responseCode":    http.StatusInternalServerError,
 		})
 		return
 	}
 
 	ctx.JSON(http.StatusCreated, gin.H{
 		"responseMessage": "User role created successfully",
-		"responseCode":    201,
+		"responseCode":    http.StatusCreated,
 	})
 }
 
@@ -361,7 +361,7 @@ func (h handler) RemoveUserRole(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&userRole); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    400,
+			"responseCode":    http.StatusBadRequest,
 		})
 		return
 	}
@@ -370,14 +370,14 @@ func (h handler) RemoveUserRole(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    500,
+			"responseCode":    http.StatusInternalServerError,
 		})
 		return
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"responseMessage": "User role deleted successfully",
-		"responseCode":    200,
+		"responseCode":    http.StatusOK,
 	})
 }
 
@@ -386,7 +386,7 @@ func (h handler) SignupUser(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    400,
+			"responseCode":    http.StatusBadRequest,
 		})
 		return
 	}
@@ -395,14 +395,14 @@ func (h handler) SignupUser(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    500,
+			"responseCode":    http.StatusInternalServerError,
 		})
 		return
 	}
 
 	ctx.JSON(http.StatusCreated, gin.H{
 		"responseMessage": "User created successfully",
-		"responseCode":    201,
+		"responseCode":    http.StatusCreated,
 		"data":            dbUser,
 	})
 }
@@ -413,10 +413,11 @@ func (h handler) LoginUser(ctx *gin.Context) {
 		PasswordHash string `json:"password"`
 	}
 	var user User
+
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    400,
+			"responseCode":    http.StatusBadRequest,
 		})
 		return
 	}
@@ -426,19 +427,19 @@ func (h handler) LoginUser(ctx *gin.Context) {
 		if err.Error() == "sql: no rows in result set" {
 			ctx.JSON(http.StatusUnauthorized, gin.H{
 				"responseMessage": "Invalid email or password",
-				"responseCode":    401,
+				"responseCode":    http.StatusUnauthorized,
 			})
 			return
 		}
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    500,
+			"responseCode":    http.StatusInternalServerError,
 		})
 		return
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
-		"token": token,
+		"access_token": token,
 	})
 }
 
@@ -447,7 +448,7 @@ func (h handler) ForgotPassword(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    400,
+			"responseCode":    http.StatusBadRequest,
 		})
 		return
 	}
@@ -456,14 +457,14 @@ func (h handler) ForgotPassword(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    500,
+			"responseCode":    http.StatusInternalServerError,
 		})
 		return
 	}
 
 	ctx.JSON(http.StatusCreated, gin.H{
 		"responseMessage": "User created successfully",
-		"responseCode":    201,
+		"responseCode":    http.StatusCreated,
 		"data":            dbUser,
 	})
 }
@@ -477,7 +478,7 @@ func (h handler) GenerateToken(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    400,
+			"responseCode":    http.StatusBadRequest,
 		})
 		return
 	}
@@ -487,13 +488,13 @@ func (h handler) GenerateToken(ctx *gin.Context) {
 		if err.Error() == "sql: no rows in result set" {
 			ctx.JSON(http.StatusUnauthorized, gin.H{
 				"responseMessage": "Invalid email or password",
-				"responseCode":    401,
+				"responseCode":    http.StatusUnauthorized,
 			})
 			return
 		}
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"responseMessage": err.Error(),
-			"responseCode":    500,
+			"responseCode":    http.StatusInternalServerError,
 		})
 		return
 	}

@@ -1,7 +1,6 @@
 package app
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -47,7 +46,8 @@ func (m middleware) GenerateToken(userId string) (string, error) {
 }
 
 func (m middleware) AuthorizeToken(ctx *gin.Context) {
-	tokenString := ctx.GetHeader("token")
+	tokenString := ctx.GetHeader("access_token")
+
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			m.logger.Error(fmt.Sprintf("unexpected signing method: %v", token.Header["sub"]))
@@ -59,24 +59,41 @@ func (m middleware) AuthorizeToken(ctx *gin.Context) {
 	if err != nil {
 		if err != nil {
 			m.logger.Error(fmt.Sprintf("Failed to verify token string : %v", err))
+			ctx.JSON(http.StatusUnauthorized, gin.H{
+				"responseCode":    http.StatusUnauthorized,
+				"responseMessage": "Failed to verify token string",
+			})
+			ctx.Abort()
+			return
 		}
-		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"error": "request not authorized",
+
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"responseCode":    http.StatusUnauthorized,
+			"responseMessage": "request not authorized",
 		})
+		ctx.Abort()
 		return
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		if float64(time.Now().Unix()) > claims["exp"].(float64) {
-			ctx.AbortWithStatus(http.StatusUnauthorized)
+			ctx.JSON(http.StatusUnauthorized, gin.H{
+				"responseCode":    http.StatusUnauthorized,
+				"responseMessage": "Failed to verify token string",
+			})
+			ctx.Abort()
 			return
 		}
 		ctx.Next()
 	} else {
 		m.logger.Error("request not authorized")
-		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"error": errors.New("request not authorized"),
+
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"responseCode":    http.StatusUnauthorized,
+			"responseMessage": "Failed to verify token string",
 		})
+		ctx.Abort()
+
 		return
 	}
 }

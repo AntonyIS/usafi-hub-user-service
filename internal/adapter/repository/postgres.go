@@ -6,21 +6,19 @@ import (
 
 	"github.com/AntonyIS/usafi-hub-user-service/config"
 	"github.com/AntonyIS/usafi-hub-user-service/internal/core/domain"
-	"github.com/AntonyIS/usafi-hub-user-service/internal/core/ports"
 	_ "github.com/lib/pq"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type postgresClient struct {
-	db                  *sql.DB
-	logger              ports.LoggerService
+	db *sql.DB
+	// logger              ports.LoggerService
 	usersTablename      string
 	rolesTablename      string
 	rolesUsersTablename string
 	tablenames          []string
 }
 
-func NewBasePostgresClient(config config.Config, logger ports.LoggerService) (*postgresClient, error) {
+func NewBasePostgresClient(config config.Config) (*postgresClient, error) {
 	dbname := config.POSTGRES_DB
 	tablenames := []string{config.USER_ROLE_TABLE, config.ROLE_TABLE, config.USER_TABLE, "roles"}
 	user := config.POSTGRES_USER
@@ -32,28 +30,24 @@ func NewBasePostgresClient(config config.Config, logger ports.LoggerService) (*p
 
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Failed to connect to the database: %v", err))
 		return nil, err
 	}
 
 	err = db.Ping()
 	if err != nil {
-		logger.Error(fmt.Sprintf("Failed to ping the database: %v", err))
 		return nil, err
 	}
 
-	logger.Info("Connected to the database successfully")
 	return &postgresClient{
 		db:                  db,
 		usersTablename:      config.USER_TABLE,
 		rolesTablename:      config.ROLE_TABLE,
 		rolesUsersTablename: config.USER_ROLE_TABLE,
 		tablenames:          tablenames,
-		logger:              logger,
 	}, nil
 }
 
-func NewUserPostgresClient(config config.Config, logger ports.LoggerService) (*postgresClient, error) {
+func NewUserPostgresClient(config config.Config) (*postgresClient, error) {
 	dbname := config.POSTGRES_DB
 	tablename := config.USER_TABLE
 	user := config.POSTGRES_USER
@@ -65,13 +59,11 @@ func NewUserPostgresClient(config config.Config, logger ports.LoggerService) (*p
 
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Failed to connect to the database: %v", err))
 		return nil, err
 	}
 
 	err = db.Ping()
 	if err != nil {
-		logger.Error(fmt.Sprintf("Failed to ping the database: %v", err))
 		return nil, err
 	}
 
@@ -92,21 +84,21 @@ func NewUserPostgresClient(config config.Config, logger ports.LoggerService) (*p
 
 	_, err = db.Exec(queryString)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Failed to create user table: %v", err))
+		// logger.Error(fmt.Sprintf("Failed to create user table: %v", err))
 		return nil, err
 	}
-	logger.Info("Connected to the database successfully")
+	// logger.Info("Connected to the database successfully")
 	return &postgresClient{
 		db:                  db,
 		usersTablename:      config.USER_TABLE,
 		rolesTablename:      config.ROLE_TABLE,
 		rolesUsersTablename: config.USER_ROLE_TABLE,
 		tablenames:          []string{},
-		logger:              logger,
+		// logger:              logger,
 	}, nil
 }
 
-func NewRolePostgresClient(config config.Config, logger ports.LoggerService) (*postgresClient, error) {
+func NewRolePostgresClient(config config.Config) (*postgresClient, error) {
 	dbname := config.POSTGRES_DB
 	tablename := config.ROLE_TABLE
 	user := config.POSTGRES_USER
@@ -118,13 +110,11 @@ func NewRolePostgresClient(config config.Config, logger ports.LoggerService) (*p
 
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Failed to connect to the database: %v", err))
 		return nil, err
 	}
 
 	err = db.Ping()
 	if err != nil {
-		logger.Error(fmt.Sprintf("Failed to ping the database: %v", err))
 		return nil, err
 	}
 
@@ -138,21 +128,21 @@ func NewRolePostgresClient(config config.Config, logger ports.LoggerService) (*p
 
 	_, err = db.Exec(roleQueryString)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Failed to create role table: %v", err))
+		// logger.Error(fmt.Sprintf("Failed to create role table: %v", err))
 		return nil, err
 	}
-	logger.Info("Connected to the database successfully")
+	// logger.Info("Connected to the database successfully")
 	return &postgresClient{
 		db:                  db,
 		usersTablename:      config.USER_TABLE,
 		rolesTablename:      config.ROLE_TABLE,
 		rolesUsersTablename: config.USER_ROLE_TABLE,
 		tablenames:          []string{},
-		logger:              logger,
+		// logger:              logger,
 	}, nil
 }
 
-func NewUserRolePostgresClient(config config.Config, logger ports.LoggerService) (*postgresClient, error) {
+func NewUserRolePostgresClient(config config.Config) (*postgresClient, error) {
 	dbname := config.POSTGRES_DB
 	tablename := config.USER_ROLE_TABLE
 	user := config.POSTGRES_USER
@@ -164,13 +154,11 @@ func NewUserRolePostgresClient(config config.Config, logger ports.LoggerService)
 
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Failed to connect to the database: %v", err))
 		return nil, err
 	}
 
 	err = db.Ping()
 	if err != nil {
-		logger.Error(fmt.Sprintf("Failed to ping the database: %v", err))
 		return nil, err
 	}
 
@@ -186,7 +174,6 @@ func NewUserRolePostgresClient(config config.Config, logger ports.LoggerService)
 
 	_, err = db.Exec(userRoleQueryString)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Failed to create user_role table: %v", err))
 		return nil, err
 	}
 
@@ -197,7 +184,6 @@ func NewUserRolePostgresClient(config config.Config, logger ports.LoggerService)
 	`, tablename, unique_user_role_name)
 	_, err = db.Exec(dropQueryString)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Failed to drop unique constraint to user_role table: %v", err))
 		return nil, err
 	}
 
@@ -208,33 +194,24 @@ func NewUserRolePostgresClient(config config.Config, logger ports.LoggerService)
 
 	_, err = db.Exec(alterQueryString)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Failed to add unique constraint to user_role table: %v", err))
 		return nil, err
 	}
-	logger.Info("Connected to the database successfully")
 	return &postgresClient{
 		db:                  db,
 		usersTablename:      config.USER_TABLE,
 		rolesTablename:      config.ROLE_TABLE,
 		rolesUsersTablename: config.USER_ROLE_TABLE,
 		tablenames:          []string{},
-		logger:              logger,
 	}, nil
 }
 
 func (svc postgresClient) CreateUser(user domain.User) (*domain.User, error) {
-	password, err := bcrypt.GenerateFromPassword([]byte(user.PasswordHash), bcrypt.DefaultCost)
-	if err != nil {
-		svc.logger.Error(fmt.Sprintf(`Unable to hash password: %s`, err.Error()))
-		return nil, err
-	}
-	user.PasswordHash = string(password)
 
 	query := fmt.Sprintf(`
         INSERT INTO %s (user_id, username, password_hash, email, fullname, phone_number, avatar, address, created_at, updated_at)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
     `, svc.usersTablename)
-	_, err = svc.db.Exec(query,
+	_, err := svc.db.Exec(query,
 		user.UserId,
 		user.Username,
 		user.PasswordHash,
@@ -247,10 +224,8 @@ func (svc postgresClient) CreateUser(user domain.User) (*domain.User, error) {
 		user.UpdatedAt,
 	)
 	if err != nil {
-		svc.logger.Error(fmt.Sprintf(`Unable to create user: %s`, err.Error()))
 		return nil, err
 	}
-	svc.logger.Info("User created successfully")
 	return svc.GetUserById(user.UserId)
 }
 
@@ -264,10 +239,8 @@ func (svc postgresClient) GetUserById(userId string) (*domain.User, error) {
 	user := &domain.User{}
 	err := row.Scan(&user.UserId, &user.Username, &user.PasswordHash, &user.Email, &user.FullName, &user.PhoneNumber, &user.Avatar, &user.Address, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
-		svc.logger.Error(fmt.Sprintf(`Unable to get user: %s`, err.Error()))
 		return nil, err
 	}
-	svc.logger.Info("User with ID read successfully")
 	return user, nil
 }
 
@@ -281,11 +254,9 @@ func (svc postgresClient) GetUserByEmail(email string) (*domain.User, error) {
 	user := &domain.User{}
 	err := row.Scan(&user.UserId, &user.Username, &user.PasswordHash, &user.Email, &user.FullName, &user.PhoneNumber, &user.Avatar, &user.Address, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
-		svc.logger.Error(fmt.Sprintf(`Unable to get user: %s`, err.Error()))
 		return nil, err
 	}
 
-	svc.logger.Info("User with ID read successfully")
 	return user, nil
 }
 
@@ -296,7 +267,6 @@ func (svc postgresClient) GetUsers() ([]*domain.User, error) {
     `, svc.usersTablename)
 	rows, err := svc.db.Query(query)
 	if err != nil {
-		svc.logger.Error(fmt.Sprintf(`Unable to get users: %s`, err.Error()))
 		return nil, err
 	}
 	defer rows.Close()
@@ -306,16 +276,13 @@ func (svc postgresClient) GetUsers() ([]*domain.User, error) {
 		user := &domain.User{}
 		err := rows.Scan(&user.UserId, &user.Username, &user.PasswordHash, &user.Email, &user.FullName, &user.PhoneNumber, &user.Avatar, &user.Address, &user.CreatedAt, &user.UpdatedAt)
 		if err != nil {
-			svc.logger.Error(fmt.Sprintf(`Unable to get users: %s`, err.Error()))
 			return nil, err
 		}
 		users = append(users, user)
 	}
 	if err := rows.Err(); err != nil {
-		svc.logger.Error(fmt.Sprintf(`Unable to get users: %s`, err.Error()))
 		return nil, err
 	}
-	svc.logger.Info("Users read successfully")
 	return users, nil
 }
 
@@ -329,7 +296,6 @@ func (svc postgresClient) GetUsersWithRole(roleName string) ([]*domain.User, err
     `, svc.usersTablename, svc.rolesUsersTablename, svc.rolesTablename)
 	rows, err := svc.db.Query(query, roleName)
 	if err != nil {
-		svc.logger.Error(fmt.Sprintf(`Unable to get users with role %s: %s`, roleName, err.Error()))
 		return nil, err
 	}
 	defer rows.Close()
@@ -339,16 +305,13 @@ func (svc postgresClient) GetUsersWithRole(roleName string) ([]*domain.User, err
 		user := &domain.User{}
 		err := rows.Scan(&user.UserId, &user.Username, &user.PasswordHash, &user.Email, &user.FullName, &user.PhoneNumber, &user.Avatar, &user.Address, &user.CreatedAt, &user.UpdatedAt)
 		if err != nil {
-			svc.logger.Error(fmt.Sprintf(`Unable to get users with role %s: %s`, roleName, err.Error()))
 			return nil, err
 		}
 		users = append(users, user)
 	}
 	if err := rows.Err(); err != nil {
-		svc.logger.Error(fmt.Sprintf(`Unable to get users with role %s: %s`, roleName, err.Error()))
 		return nil, err
 	}
-	svc.logger.Info("Users with role read successfully")
 	return users, nil
 }
 
@@ -360,10 +323,8 @@ func (svc postgresClient) UpdateUser(user domain.User) (*domain.User, error) {
     `, svc.usersTablename)
 	_, err := svc.db.Exec(query, user.UserId, user.Username, user.PasswordHash, user.Email, user.FullName, user.PhoneNumber, user.Avatar, user.Address, user.UpdatedAt)
 	if err != nil {
-		svc.logger.Error(fmt.Sprintf(`Unable to update user: %s`, err.Error()))
 		return nil, err
 	}
-	svc.logger.Info("User updated successfully")
 	return svc.GetUserById(user.UserId)
 }
 
@@ -374,17 +335,14 @@ func (svc postgresClient) DeleteUser(userId string) error {
     `, svc.usersTablename)
 	_, err := svc.db.Exec(query, userId)
 	if err != nil {
-		svc.logger.Error(fmt.Sprintf(`Unable to delete user: %s`, err.Error()))
 		return err
 	}
-	svc.logger.Info("User deleted successfully")
 	return nil
 }
 
 func (svc postgresClient) CreateRole(role domain.Role) (*domain.Role, error) {
 	roles, err := svc.GetRoles()
 	if err != nil {
-		svc.logger.Error(fmt.Sprintf(`Unable to read roles: %s`, err.Error()))
 		return nil, err
 	}
 	for _, roleItem := range roles {
@@ -399,10 +357,8 @@ func (svc postgresClient) CreateRole(role domain.Role) (*domain.Role, error) {
 
 	_, err = svc.db.Exec(query, role.RoleId, role.Name, role.Description)
 	if err != nil {
-		svc.logger.Error(fmt.Sprintf(`Unable to create role: %s`, err.Error()))
 		return nil, err
 	}
-	svc.logger.Info("Role created successfully")
 	return svc.GetRoleById(role.RoleId)
 }
 
@@ -416,10 +372,8 @@ func (svc postgresClient) GetRoleById(roleId string) (*domain.Role, error) {
 	role := &domain.Role{}
 	err := row.Scan(&role.RoleId, &role.Name, &role.Description)
 	if err != nil {
-		svc.logger.Error(fmt.Sprintf(`Unable to get role: %s`, err.Error()))
 		return nil, err
 	}
-	svc.logger.Info("Role read successfully")
 	return role, nil
 }
 
@@ -430,7 +384,6 @@ func (svc postgresClient) GetRoles() ([]*domain.Role, error) {
     `, svc.rolesTablename)
 	rows, err := svc.db.Query(query)
 	if err != nil {
-		svc.logger.Error(fmt.Sprintf(`Unable to get roles: %s`, err.Error()))
 		return nil, err
 	}
 	defer rows.Close()
@@ -440,16 +393,13 @@ func (svc postgresClient) GetRoles() ([]*domain.Role, error) {
 		role := &domain.Role{}
 		err := rows.Scan(&role.RoleId, &role.Name, &role.Description)
 		if err != nil {
-			svc.logger.Error(fmt.Sprintf(`Unable to get roles: %s`, err.Error()))
 			return nil, err
 		}
 		roles = append(roles, role)
 	}
 	if err := rows.Err(); err != nil {
-		svc.logger.Error(fmt.Sprintf(`Unable to get roles: %s`, err.Error()))
 		return nil, err
 	}
-	svc.logger.Info("Roles read successfully")
 	return roles, nil
 }
 
@@ -461,10 +411,8 @@ func (svc postgresClient) UpdateRole(role domain.Role) error {
 	`, svc.rolesTablename)
 	_, err := svc.db.Exec(query, role.RoleId, role.Name, role.Description)
 	if err != nil {
-		svc.logger.Error(fmt.Sprintf(`Unable to update role: %s`, err.Error()))
 		return err
 	}
-	svc.logger.Info("Role updated successfully")
 	return nil
 }
 
@@ -475,10 +423,8 @@ func (svc postgresClient) DeleteRole(roleId string) error {
 	`, svc.rolesTablename)
 	_, err := svc.db.Exec(query, roleId)
 	if err != nil {
-		svc.logger.Error(fmt.Sprintf(`Unable to delete role: %s`, err.Error()))
 		return err
 	}
-	svc.logger.Info("Role deleted successfully")
 	return nil
 }
 
@@ -490,10 +436,8 @@ func (svc postgresClient) AddUserRole(userRole domain.UserRole) error {
 
 	_, err := svc.db.Exec(query, userRole.UserId, userRole.RoleId)
 	if err != nil {
-		svc.logger.Error(fmt.Sprintf(`Unable to add user role: %s`, err.Error()))
 		return err
 	}
-	svc.logger.Info("User role added successfully")
 
 	return nil
 }
@@ -505,10 +449,8 @@ func (svc postgresClient) RemoveUserRole(userRole domain.UserRole) error {
    	`, svc.rolesUsersTablename)
 	_, err := svc.db.Exec(query, userRole.UserId, userRole.RoleId)
 	if err != nil {
-		svc.logger.Error(fmt.Sprintf(`Unable to remove user role: %s`, err.Error()))
 		return err
 	}
-	svc.logger.Info("User role removed successfully")
 	return nil
 }
 
@@ -519,8 +461,6 @@ func (svc postgresClient) DropTables() error {
 			return err
 		}
 	}
-	svc.logger.Info("Database tables dropped successfully")
-
 	return nil
 
 }
